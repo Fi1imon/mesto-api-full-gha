@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { PORT = 3000, DB_CONN = 'mongodb://localhost:27017/mesto' } = process.env;
+const { PORT, DB_CONN } = process.env;
 
 const express = require('express');
 
@@ -26,11 +26,15 @@ const { errorHandler } = require('./middlewares/errorHandler');
 
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
+const { checkCors } = require('./middlewares/cors');
+
 const auth = require('./middlewares/auth');
 
 const app = express();
 
 app.use(bodyParser.json());
+
+app.use(checkCors);
 
 app.use(cookieParser());
 
@@ -44,6 +48,12 @@ app.use(rateLimit({
 }));
 
 app.use(requestLogger);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 app.post('/signup', celebrate({ body: signup }), createUser);
 app.post('/signin', celebrate({ body: signin }), login);

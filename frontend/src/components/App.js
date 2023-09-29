@@ -35,20 +35,24 @@ function App() {
   const [isCheckingToken, setIsCheckingToken] = React.useState(false)
 
   React.useEffect(() => {
-    api.getUserInfo()
-      .then((user) => {
-        setCurrentUser(user)
-      })
-      .catch(console.error)
-  }, []);
+    if(loggedIn) {
+      api.getUserInfo({ token: localStorage.getItem('jwt') })
+        .then((user) => {
+          setCurrentUser(user)
+        })
+        .catch(console.error)
+    }
+  }, [loggedIn]);
 
   React.useEffect(() => {
-    api.getInitialCards()
-      .then((cards) => {
-        setInitialCards(cards)
-      })
-      .catch(console.error)
-  }, []);
+    if(loggedIn) {
+      api.getInitialCards()
+        .then((res) => {
+          setInitialCards(res.cards)
+        })
+        .catch(console.error)
+    }
+  }, [loggedIn]);
 
   React.useEffect(() => {
     setIsCheckingToken(true)
@@ -56,7 +60,7 @@ function App() {
     if(token) {
       auth.checkToken({ token })
         .then((res) => {
-          setUserEmail(res.data.email);
+          setUserEmail(res.email);
           setLoggedIn(true);
         })
         .catch((err) => {
@@ -103,7 +107,7 @@ function App() {
   }
 
   function handleCardLike(card) {
-    const isLiked = card.likes.some(i => i._id === currentUser._id);
+    const isLiked = card.likes.some(i => i === currentUser._id);
 
     api.toggleLike(card._id, isLiked)
       .then((newCard) => {
@@ -149,8 +153,8 @@ function App() {
     setButtonText('Сохранение...');
 
     api.addCard({ title, imageUrl })
-      .then(card => {
-        setInitialCards([card, ...initialCards]);
+      .then(res => {
+        setInitialCards([...initialCards, res.card]);
         closeAllPopups();
       })
       .catch(console.error)
@@ -175,11 +179,11 @@ function App() {
 
     auth.login({ email, password })
       .then((res) => {
-        setLoggedIn(true)
+        setLoggedIn(true);
         localStorage.setItem('jwt', res.token);
         auth.checkToken({ token: res.token })
           .then((res) => {
-            setUserEmail(res.data.email)
+            setUserEmail(res.email)
           })
       })
       .catch((err) => {

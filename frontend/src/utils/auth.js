@@ -49,6 +49,6 @@ export class Auth {
   }
 }
 
-const auth = new Auth({baseUrl: 'https://auth.nomoreparties.co'})
+const auth = new Auth({baseUrl: 'https://api.mesto.fi1imon.nomoredomainsrocks.ru'})
 
 export default auth
